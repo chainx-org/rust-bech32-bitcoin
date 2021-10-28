@@ -59,14 +59,19 @@
 #![deny(non_snake_case)]
 #![deny(unused_mut)]
 #![cfg_attr(feature = "strict", deny(warnings))]
+#![no_std]
 
+extern crate alloc;
 extern crate bech32;
 pub use bech32::u5;
 use bech32::{decode, encode, FromBase32, ToBase32, Variant};
 
-use std::str::FromStr;
-use std::string::ToString;
-use std::{error, fmt};
+use alloc::{
+    string::{String, ToString},
+    vec,
+    vec::Vec,
+};
+use core::{fmt, str::FromStr};
 
 pub mod constants;
 use constants::Network;
@@ -296,33 +301,9 @@ impl fmt::Display for Error {
     }
 }
 
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Bech32(_) => "Bech32 error",
-            Error::InvalidHumanReadablePart => "invalid human-readable part",
-            Error::ScriptPubkeyTooShort => "scriptpubkey too short",
-            Error::ScriptPubkeyInvalidLength => "scriptpubkey length mismatch",
-            Error::InvalidLength => "invalid length",
-            Error::InvalidVersionLength => "program length incompatible with version",
-            Error::InvalidScriptVersion => "invalid script version",
-            Error::InvalidEncoding => "invalid Bech32 encoding",
-        }
-    }
-
-    fn cause(&self) -> Option<&std::error::Error> {
-        match *self {
-            Error::Bech32(ref e) => Some(e),
-            _ => None,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use bech32;
-    use constants::Network;
-    use *;
+    use super::*;
 
     #[test]
     fn valid_address() {
